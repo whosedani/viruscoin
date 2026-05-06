@@ -347,6 +347,17 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   margin-top: 24px;
   opacity: 0.92;
 }
+.tweet-embed {
+  margin-top: 36px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.tweet-embed .twitter-tweet,
+.tweet-embed iframe {
+  margin: 0 auto !important;
+  max-width: 100% !important;
+}
 .pull-quote {
   font-family: 'Rubik', sans-serif;
   font-size: 20px;
