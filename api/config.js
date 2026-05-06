@@ -1,12 +1,12 @@
 import { Redis } from '@upstash/redis';
 
 const redis = new Redis({
-  url: process.env.KV_REST_API_URL,
-  token: process.env.KV_REST_API_TOKEN,
+  url: process.env.VIRUS_UPSTASH_URL,
+  token: process.env.VIRUS_UPSTASH_TOKEN,
 });
 
 const REDIS_KEY = 'virus:config';
-const ADMIN_HASH = process.env.ADMIN_HASH;
+const ADMIN_HASH = process.env.VIRUS_ADMIN_HASH;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
