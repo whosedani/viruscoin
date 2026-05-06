@@ -123,21 +123,53 @@
     }
   }
 
-  function drawLink(x1, y1, x2, y2) {
-    if (!linksSvg) return;
-    var dx = x2 - x1;
-    var dy = y2 - y1;
-    var len = Math.sqrt(dx * dx + dy * dy);
-    if (len < 1) return;
+  // active links updated each frame so the source endpoint follows the parent virus
+  var activeLinks = [];
+  var linksRafActive = false;
+
+  function virusCenter(entry) {
+    return [entry.baseX + (entry.attractX || 0), entry.baseY + (entry.attractY || 0)];
+  }
+
+  function updateLinksFrame() {
+    if (activeLinks.length === 0) { linksRafActive = false; return; }
+    for (var i = 0; i < activeLinks.length; i++) {
+      var l = activeLinks[i];
+      var s = virusCenter(l.src);
+      var d = virusCenter(l.dst);
+      l.line.setAttribute('x1', s[0]);
+      l.line.setAttribute('y1', s[1]);
+      l.line.setAttribute('x2', d[0]);
+      l.line.setAttribute('y2', d[1]);
+    }
+    requestAnimationFrame(updateLinksFrame);
+  }
+
+  function drawLink(srcEntry, dstEntry) {
+    if (!linksSvg || !srcEntry || !dstEntry) return;
+    var s = virusCenter(srcEntry);
+    var d = virusCenter(dstEntry);
     var line = document.createElementNS(SVG_NS, 'line');
-    line.setAttribute('x1', x1);
-    line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y2', y2);
+    line.setAttribute('x1', s[0]);
+    line.setAttribute('y1', s[1]);
+    line.setAttribute('x2', d[0]);
+    line.setAttribute('y2', d[1]);
+    line.setAttribute('pathLength', '1');
     line.setAttribute('class', 'link-line');
-    line.style.setProperty('--len', len);
     linksSvg.appendChild(line);
-    setTimeout(function () { if (line.parentNode) line.parentNode.removeChild(line); }, 1100);
+
+    var rec = { line: line, src: srcEntry, dst: dstEntry };
+    activeLinks.push(rec);
+    if (!linksRafActive) {
+      linksRafActive = true;
+      requestAnimationFrame(updateLinksFrame);
+    }
+
+    setTimeout(function () {
+      if (line.parentNode) line.parentNode.removeChild(line);
+      var idx = activeLinks.indexOf(rec);
+      if (idx >= 0) activeLinks.splice(idx, 1);
+    }, 1100);
   }
 
   function spawnInitialVirus() {
@@ -184,8 +216,8 @@
       if (r < 0.18)      newSize = randInt(130, 190); // big
       else if (r < 0.55) newSize = randInt(70, 120);  // medium
       else               newSize = randInt(28, 60);   // small
-      drawLink(clickX, clickY, nx, ny);
-      makeVirus(nx, ny, newSize);
+      var newEntry = makeVirus(nx, ny, newSize);
+      drawLink(entry, newEntry);
     }
   }
 

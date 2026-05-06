@@ -226,8 +226,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   stroke-width: 2;
   stroke-linecap: round;
   fill: none;
-  stroke-dasharray: var(--len, 100);
-  stroke-dashoffset: var(--len, 100);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   filter:
     drop-shadow(0 0 4px rgba(139, 219, 74, 0.95))
     drop-shadow(0 0 10px rgba(139, 219, 74, 0.65))
@@ -236,11 +236,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   opacity: 0;
 }
 @keyframes link-flash {
-  0%   { stroke-dashoffset: var(--len, 100); opacity: 0;   stroke-width: 1; }
-  18%  { stroke-dashoffset: 0;                opacity: 1;   stroke-width: 3; }
-  40%  { opacity: 1;   stroke-width: 2; }
-  70%  { opacity: 0.85; stroke-width: 2.5; }
-  100% { opacity: 0;   stroke-width: 1; }
+  0%   { stroke-dashoffset: 1; opacity: 0;    stroke-width: 1; }
+  18%  { stroke-dashoffset: 0; opacity: 1;    stroke-width: 3; }
+  40%  { stroke-dashoffset: 0; opacity: 1;    stroke-width: 2; }
+  70%  { stroke-dashoffset: 0; opacity: 0.85; stroke-width: 2.5; }
+  100% { stroke-dashoffset: 0; opacity: 0;    stroke-width: 1; }
 }
 
 /* glow pulse left at click point */
