@@ -143,45 +143,6 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--bio-dark);
 }
 
-.hud {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 80px;
-  padding: 22px 24px;
-  pointer-events: none;
-}
-.hud-block { pointer-events: auto; text-align: center; }
-.hud-label {
-  font-family: 'Ubuntu Mono', monospace;
-  font-size: 11px;
-  color: var(--spore);
-  letter-spacing: 2px;
-  margin-bottom: 6px;
-  text-transform: uppercase;
-}
-.hud-value {
-  font-family: 'Ubuntu Mono', monospace;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  transition: text-shadow 0.2s;
-}
-.hud-value.lime {
-  color: var(--toxic-lime);
-  text-shadow: 0 0 12px var(--lime-glow);
-}
-.hud-value.white { color: var(--cell-white); }
-.hud-value.flash {
-  color: var(--toxic-lime);
-  text-shadow: 0 0 18px var(--lime-glow);
-}
-
 .petri {
   position: absolute;
   inset: 0;
@@ -301,7 +262,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .hero-hint {
   position: absolute;
   left: 50%;
-  bottom: 26%;
+  top: 38px;
   transform: translateX(-50%);
   z-index: 8;
   font-family: 'Karla', sans-serif;
@@ -311,8 +272,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   animation: hint-pulse 2.4s ease-in-out infinite;
   pointer-events: none;
   white-space: nowrap;
+  transition: opacity 0.5s ease;
 }
-.hero-hint.hidden { opacity: 0; pointer-events: none; }
+.hero-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+}
 @keyframes hint-pulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.95; }
@@ -591,10 +557,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .nav-ca { display: none; }
   .nav-right { gap: 10px; }
   .btn-buy-nav { padding: 5px 14px; font-size: 11px; }
-  .hud { padding: 14px 12px; gap: 36px; }
-  .hud-value { font-size: 22px; }
-  .hud-label { font-size: 10px; letter-spacing: 1.5px; }
-  .hero-hint { font-size: 13px; bottom: 22%; padding: 0 16px; text-align: center; }
+  .hero-hint { font-size: 13px; top: 28px; padding: 0 16px; text-align: center; }
   .btn-buy { bottom: 36px; font-size: 13px; padding: 11px 26px; }
   .h2 { font-size: 24px; }
   .h2.small { font-size: 22px; }

@@ -6,18 +6,12 @@
   var ATTRACT_K = 5;
   var ATTRACT_RANGE = 340;
   var ATTRACT_FORCE = 120;
-  var GLOBAL_POLL_MS = 5000;
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
-  var localCount = parseInt(localStorage.getItem('virus_local') || '0', 10);
-  var globalCount = 0;
-  var displayedGlobal = 0;
-  var hasClicked = localCount > 0;
+  var hasClicked = false;
 
-  var petri, hudLocal, hudGlobal, hint, toast, tpl, linksSvg;
-  var viruses = []; // { el, baseX, baseY, size, attractX, attractY, swapTransition }
-  var pendingClicks = 0;
-  var flushTimer = null;
+  var petri, hint, toast, tpl, linksSvg;
+  var viruses = [];
 
   var config = {
     ca: '',
@@ -32,7 +26,6 @@
   function rand(min, max) { return Math.random() * (max - min) + min; }
   function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
-  function fmtNum(n) { return n.toLocaleString('en-US'); }
 
   function showToast(msg) {
     if (!toast) return;
@@ -54,73 +47,6 @@
       try { document.execCommand('copy'); showToast('infected.'); } catch (e) {}
       document.body.removeChild(ta);
     }
-  }
-
-  // ---------------- counters ----------------
-  function setLocal(n) {
-    localCount = n;
-    localStorage.setItem('virus_local', String(n));
-    if (hudLocal) hudLocal.textContent = fmtNum(n);
-  }
-
-  function animateGlobal(target) {
-    if (target === displayedGlobal) return;
-    var start = displayedGlobal;
-    var diff = target - start;
-    var dur = 600;
-    var t0 = performance.now();
-    function step(t) {
-      var p = clamp((t - t0) / dur, 0, 1);
-      var eased = 1 - Math.pow(1 - p, 3);
-      var v = Math.round(start + diff * eased);
-      if (hudGlobal) hudGlobal.textContent = fmtNum(v);
-      if (p < 1) requestAnimationFrame(step);
-      else displayedGlobal = target;
-    }
-    requestAnimationFrame(step);
-  }
-
-  function flashGlobal() {
-    if (!hudGlobal) return;
-    hudGlobal.classList.add('flash');
-    setTimeout(function () { hudGlobal.classList.remove('flash'); }, 220);
-  }
-
-  function fetchGlobal() {
-    fetch('/api/count').then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
-      if (!d || typeof d.count !== 'number') return;
-      if (d.count !== globalCount) {
-        globalCount = d.count;
-        flashGlobal();
-        animateGlobal(globalCount);
-      } else if (displayedGlobal !== globalCount) {
-        animateGlobal(globalCount);
-      }
-    }).catch(function () {});
-  }
-
-  function flushClicks() {
-    if (pendingClicks <= 0) return;
-    var n = pendingClicks;
-    pendingClicks = 0;
-    fetch('/api/count', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ n: n })
-    }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
-      if (d && typeof d.count === 'number') {
-        globalCount = d.count;
-        animateGlobal(globalCount);
-      }
-    }).catch(function () {});
-  }
-
-  function queueClick(n) {
-    pendingClicks += n;
-    globalCount += n;
-    animateGlobal(globalCount);
-    if (flushTimer) clearTimeout(flushTimer);
-    flushTimer = setTimeout(flushClicks, 250);
   }
 
   // ---------------- viruses ----------------
@@ -245,20 +171,19 @@
     petri.appendChild(pulse);
     setTimeout(function () { if (pulse.parentNode) pulse.parentNode.removeChild(pulse); }, 600);
 
-    // delta: the same number applied to BOTH local and global
-    var mult = rand(1.2, 2.0);
-    var delta = Math.max(1, Math.round(rand(1, 3) * mult));
-    setLocal(localCount + delta);
-    queueClick(delta);
-
     // spawn 1-3 new visual viruses anywhere across the hero, connected by glowing links
     var spawnN = randInt(1, 3);
     var marginX = 60;
-    var marginY = 90;
+    var marginY = 80;
     for (var i = 0; i < spawnN; i++) {
       var nx = rand(marginX, Math.max(marginX + 1, rect.width - marginX));
       var ny = rand(marginY, Math.max(marginY + 1, rect.height - marginY));
-      var newSize = randInt(40, 120);
+      // varied sizes: weighted buckets — small, medium, large
+      var r = Math.random();
+      var newSize;
+      if (r < 0.18)      newSize = randInt(130, 190); // big
+      else if (r < 0.55) newSize = randInt(70, 120);  // medium
+      else               newSize = randInt(28, 60);   // small
       drawLink(clickX, clickY, nx, ny);
       makeVirus(nx, ny, newSize);
     }
@@ -379,15 +304,10 @@
   // ---------------- init ----------------
   function init() {
     petri = $('petri');
-    hudLocal = $('localCount');
-    hudGlobal = $('globalCount');
     hint = $('heroHint');
     toast = $('toast');
     tpl = $('virus-template');
     linksSvg = $('links');
-
-    if (hudLocal) hudLocal.textContent = fmtNum(localCount);
-    if (hasClicked && hint) hint.classList.add('hidden');
 
     spawnInitialVirus();
 
@@ -403,11 +323,6 @@
     var footerCa = $('footerCa');
     if (navCa) navCa.addEventListener('click', function () { if (config.ca) copy(config.ca); });
     if (footerCa) footerCa.addEventListener('click', function () { if (config.ca) copy(config.ca); });
-
-    fetchGlobal();
-    setInterval(fetchGlobal, GLOBAL_POLL_MS);
-
-    window.addEventListener('beforeunload', flushClicks);
 
     loadConfig();
   }
