@@ -136,7 +136,8 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* ============== hero ============== */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
+  min-height: calc(100dvh - 60px);
   width: 100%;
   overflow: hidden;
   background: var(--bio-dark);
@@ -149,13 +150,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   right: 0;
   z-index: 10;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: flex-start;
-  padding: 24px 32px;
+  gap: 80px;
+  padding: 22px 24px;
   pointer-events: none;
 }
-.hud-block { pointer-events: auto; }
-.hud-block.right { text-align: right; }
+.hud-block { pointer-events: auto; text-align: center; }
 .hud-label {
   font-family: 'Ubuntu Mono', monospace;
   font-size: 11px;
@@ -192,7 +193,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   width: var(--vsize, 200px);
   height: var(--vsize, 200px);
   pointer-events: auto;
-  cursor: crosshair;
+  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   will-change: transform;
@@ -535,7 +536,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .nav-ca { display: none; }
   .nav-right { gap: 10px; }
   .btn-buy-nav { padding: 5px 14px; font-size: 11px; }
-  .hud { padding: 16px 18px; }
+  .hud { padding: 14px 12px; gap: 36px; }
   .hud-value { font-size: 22px; }
   .hud-label { font-size: 10px; letter-spacing: 1.5px; }
   .hero-hint { font-size: 13px; bottom: 22%; padding: 0 16px; text-align: center; }

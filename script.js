@@ -211,24 +211,19 @@
     petri.appendChild(pulse);
     setTimeout(function () { if (pulse.parentNode) pulse.parentNode.removeChild(pulse); }, 600);
 
-    // local: multiply with 1.2-2.0 multiplier (rounded)
+    // delta: the same number applied to BOTH local and global
     var mult = rand(1.2, 2.0);
-    var prev = localCount;
-    var next = Math.max(prev + 1, Math.round((prev + 1) * mult / Math.max(1, mult * 0.6)));
-    // simpler & predictable: add 1, but boost by mult occasionally
-    next = prev + Math.max(1, Math.round(rand(1, 3) * mult));
-    setLocal(next);
+    var delta = Math.max(1, Math.round(rand(1, 3) * mult));
+    setLocal(localCount + delta);
+    queueClick(delta);
 
-    // global: increment by 1 per actual click
-    queueClick(1);
-
-    // spawn 1-3 new visual viruses
+    // spawn 1-3 new visual viruses anywhere across the hero
     var spawnN = randInt(1, 3);
+    var marginX = 60;
+    var marginY = 90;
     for (var i = 0; i < spawnN; i++) {
-      var ox = rand(-80, 80);
-      var oy = rand(-80, 80);
-      var nx = clamp(entry.baseX + ox, 60, rect.width - 60);
-      var ny = clamp(entry.baseY + oy, 80, rect.height - 80);
+      var nx = rand(marginX, Math.max(marginX + 1, rect.width - marginX));
+      var ny = rand(marginY, Math.max(marginY + 1, rect.height - marginY));
       var newSize = randInt(40, 120);
       makeVirus(nx, ny, newSize);
     }
