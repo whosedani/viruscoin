@@ -299,8 +299,7 @@
   // ---------------- twitter intent ----------------
   function onSpread() {
     var text = (config.tweet_text || "$viruscoin just infected my wallet. this coin will spread. 🦠");
-    var url = window.location.origin + window.location.pathname;
-    var intent = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+    var intent = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
     window.open(intent, '_blank', 'noopener');
   }
 
