@@ -9,6 +9,8 @@
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
   var hasClicked = false;
+  var clickCount = 0;
+  var intentTriggered = false;
 
   var petri, hint, toast, tpl, linksSvg;
   var viruses = [];
@@ -184,6 +186,11 @@
     if (!hasClicked) {
       hasClicked = true;
       if (hint) hint.classList.add('hidden');
+    }
+    clickCount++;
+    if (clickCount === 10 && !intentTriggered) {
+      intentTriggered = true;
+      onSpread();
     }
 
     // pop animation on the clicked virus

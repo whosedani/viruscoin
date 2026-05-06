@@ -348,11 +348,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   opacity: 0.92;
 }
 .tweet-embed {
-  margin-top: 36px;
+  margin-top: 64px;
   width: 100%;
   display: flex;
   justify-content: center;
 }
+.spread .lore { text-align: center; }
 .tweet-embed .twitter-tweet,
 .tweet-embed iframe {
   margin: 0 auto !important;
@@ -406,11 +407,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 /* word / tweet */
 .tweet-card {
   margin: 32px auto 24px;
-  max-width: 520px;
+  width: 100%;
+  max-width: 100%;
   background: var(--culture);
   border: 1px solid var(--line-soft);
   border-radius: 12px;
-  padding: 24px 28px 26px;
+  padding: 28px 32px 30px;
   text-align: left;
   transition: border-color 0.25s;
 }
@@ -456,14 +458,15 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .btn-spread {
-  display: inline-block;
+  display: block;
+  width: 100%;
   font-family: 'Rubik', sans-serif;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 1px;
   background: var(--toxic-lime);
   color: var(--bio-dark);
-  padding: 12px 32px;
+  padding: 16px 32px;
   border-radius: 0;
   transition: filter 0.2s, box-shadow 0.2s, transform 0.15s;
   margin-top: 8px;
