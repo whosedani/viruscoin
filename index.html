@@ -15,6 +15,26 @@
 </head>
 <body>
 
+  <!-- shared SVG defs (gradients reused across all virus instances) -->
+  <svg width="0" height="0" style="position:absolute;left:-9999px" aria-hidden="true">
+    <defs>
+      <radialGradient id="vc-body" cx="32%" cy="28%" r="78%">
+        <stop offset="0%" stop-color="#8BC976"/>
+        <stop offset="48%" stop-color="#4A8C3F"/>
+        <stop offset="100%" stop-color="#234720"/>
+      </radialGradient>
+      <radialGradient id="vc-bulb" cx="30%" cy="28%" r="80%">
+        <stop offset="0%" stop-color="#E8FFC8"/>
+        <stop offset="55%" stop-color="#8BDB4A"/>
+        <stop offset="100%" stop-color="#5BAA1F"/>
+      </radialGradient>
+      <radialGradient id="vc-spot" cx="38%" cy="32%" r="80%">
+        <stop offset="0%" stop-color="#3A7030"/>
+        <stop offset="100%" stop-color="#1B3617"/>
+      </radialGradient>
+    </defs>
+  </svg>
+
   <!-- background micro-organisms -->
   <div class="organisms" aria-hidden="true">
     <span class="micro" style="--x:8%;--y:14%;--d:28s;--s:6px;"></span>
@@ -31,30 +51,43 @@
   <template id="virus-template">
     <div class="virus">
       <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <g class="spikes">
-          <line x1="50" y1="6" x2="50" y2="20" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="50" cy="6" r="3.5" fill="#8BDB4A"/>
-          <line x1="50" y1="80" x2="50" y2="94" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="50" cy="94" r="3.5" fill="#8BDB4A"/>
-          <line x1="6" y1="50" x2="20" y2="50" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="6" cy="50" r="3.5" fill="#8BDB4A"/>
-          <line x1="80" y1="50" x2="94" y2="50" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="94" cy="50" r="3.5" fill="#8BDB4A"/>
-          <line x1="19" y1="19" x2="29" y2="29" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="19" cy="19" r="3.2" fill="#8BDB4A"/>
-          <line x1="81" y1="19" x2="71" y2="29" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="81" cy="19" r="3.2" fill="#8BDB4A"/>
-          <line x1="19" y1="81" x2="29" y2="71" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="19" cy="81" r="3.2" fill="#8BDB4A"/>
-          <line x1="81" y1="81" x2="71" y2="71" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="81" cy="81" r="3.2" fill="#8BDB4A"/>
+        <g class="spikes" stroke="#3F7836" stroke-width="3" stroke-linecap="round">
+          <line x1="50" y1="6" x2="50" y2="22"/>
+          <line x1="50" y1="78" x2="50" y2="94"/>
+          <line x1="6" y1="50" x2="22" y2="50"/>
+          <line x1="78" y1="50" x2="94" y2="50"/>
+          <line x1="19" y1="19" x2="29" y2="29"/>
+          <line x1="81" y1="19" x2="71" y2="29"/>
+          <line x1="19" y1="81" x2="29" y2="71"/>
+          <line x1="81" y1="81" x2="71" y2="71"/>
+          <line x1="35" y1="9" x2="38" y2="24"/>
+          <line x1="65" y1="9" x2="62" y2="24"/>
+          <line x1="35" y1="91" x2="38" y2="76"/>
+          <line x1="65" y1="91" x2="62" y2="76"/>
         </g>
-        <circle cx="50" cy="50" r="28" fill="#4A8C3F" stroke="#2E5A28" stroke-width="2"/>
-        <circle cx="42" cy="44" r="4" fill="#2E5A28"/>
-        <circle cx="58" cy="46" r="3" fill="#2E5A28"/>
-        <circle cx="48" cy="58" r="3.5" fill="#2E5A28"/>
-        <circle cx="60" cy="58" r="2.5" fill="#2E5A28"/>
-        <circle cx="40" cy="55" r="2" fill="#2E5A28"/>
+        <g class="bulbs" fill="url(#vc-bulb)">
+          <circle cx="50" cy="6" r="4"/>
+          <circle cx="50" cy="94" r="4"/>
+          <circle cx="6" cy="50" r="4"/>
+          <circle cx="94" cy="50" r="4"/>
+          <circle cx="19" cy="19" r="3.4"/>
+          <circle cx="81" cy="19" r="3.4"/>
+          <circle cx="19" cy="81" r="3.4"/>
+          <circle cx="81" cy="81" r="3.4"/>
+          <circle cx="35" cy="9" r="3"/>
+          <circle cx="65" cy="9" r="3"/>
+          <circle cx="35" cy="91" r="3"/>
+          <circle cx="65" cy="91" r="3"/>
+        </g>
+        <circle class="body" cx="50" cy="50" r="28" fill="url(#vc-body)" stroke="#234720" stroke-width="1.2"/>
+        <ellipse class="hl" cx="40" cy="38" rx="9" ry="5" fill="#E8FFC8" fill-opacity="0.20" transform="rotate(-25 40 38)"/>
+        <g class="spots" fill="url(#vc-spot)" opacity="0.85">
+          <circle cx="42" cy="44" r="3.4"/>
+          <circle cx="58" cy="46" r="2.6"/>
+          <circle cx="48" cy="58" r="3.0"/>
+          <circle cx="60" cy="58" r="2.4"/>
+          <circle cx="40" cy="56" r="1.8"/>
+        </g>
       </svg>
     </div>
   </template>
@@ -90,7 +123,9 @@
       </div>
     </div>
 
-    <div class="petri" id="petri"></div>
+    <div class="petri" id="petri">
+      <svg class="links" id="links" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
+    </div>
 
     <div class="hero-hint" id="heroHint">click the virus. spread the infection.</div>
 

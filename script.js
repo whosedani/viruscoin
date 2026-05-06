@@ -2,17 +2,18 @@
   'use strict';
 
   // ---------------- state ----------------
-  var MAX_VIRUSES = 60;
-  var REPEL_RADIUS = 120;
-  var REPEL_FORCE = 60;
+  var MAX_VIRUSES = 200;
+  var REPEL_RADIUS = 130;
+  var REPEL_FORCE = 70;
   var GLOBAL_POLL_MS = 5000;
+  var SVG_NS = 'http://www.w3.org/2000/svg';
 
   var localCount = parseInt(localStorage.getItem('virus_local') || '0', 10);
   var globalCount = 0;
   var displayedGlobal = 0;
   var hasClicked = localCount > 0;
 
-  var petri, hudLocal, hudGlobal, hint, toast, tpl;
+  var petri, hudLocal, hudGlobal, hint, toast, tpl, linksSvg;
   var viruses = []; // { el, baseX, baseY, size, repelX, repelY, swapTransition }
   var pendingClicks = 0;
   var flushTimer = null;
@@ -126,14 +127,15 @@
     var node = tpl.content.firstElementChild.cloneNode(true);
     var hue = randInt(-15, 30);
     var bri = rand(0.85, 1.15).toFixed(2);
-    var op = rand(0.78, 1).toFixed(2);
+    var op = rand(0.82, 1).toFixed(2);
     node.style.setProperty('--vsize', size + 'px');
     node.style.setProperty('--vop', op);
-    node.style.setProperty('--lev-dur', rand(3.4, 5.2).toFixed(2) + 's');
-    node.style.setProperty('--lev-delay', '-' + rand(0, 4).toFixed(2) + 's');
-    node.querySelector('svg').style.filter = 'drop-shadow(0 6px 18px rgba(0,0,0,0.45)) hue-rotate(' + hue + 'deg) brightness(' + bri + ')';
+    node.style.setProperty('--lev-dur', rand(4.5, 7.0).toFixed(2) + 's');
+    node.style.setProperty('--lev-delay', '-' + rand(0, 6).toFixed(2) + 's');
+    node.style.setProperty('--virus-hue', hue + 'deg');
+    node.style.setProperty('--virus-bri', bri);
     node.classList.add('spawning');
-    setTimeout(function () { node.classList.remove('spawning'); }, 400);
+    setTimeout(function () { node.classList.remove('spawning'); }, 460);
 
     petri.appendChild(node);
 
@@ -186,6 +188,23 @@
     }
   }
 
+  function drawLink(x1, y1, x2, y2) {
+    if (!linksSvg) return;
+    var dx = x2 - x1;
+    var dy = y2 - y1;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) return;
+    var line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('class', 'link-line');
+    line.style.setProperty('--len', len);
+    linksSvg.appendChild(line);
+    setTimeout(function () { if (line.parentNode) line.parentNode.removeChild(line); }, 1100);
+  }
+
   function spawnInitialVirus() {
     var rect = petri.getBoundingClientRect();
     var cx = rect.width / 2;
@@ -200,14 +219,20 @@
       if (hint) hint.classList.add('hidden');
     }
 
+    // pop animation on the clicked virus
+    entry.el.classList.remove('popped');
+    void entry.el.offsetWidth;
+    entry.el.classList.add('popped');
+    setTimeout(function () { entry.el.classList.remove('popped'); }, 360);
+
     // pulse glow at click
     var rect = petri.getBoundingClientRect();
-    var px = (ev.clientX - rect.left) - 30;
-    var py = (ev.clientY - rect.top) - 30;
+    var clickX = ev.clientX - rect.left;
+    var clickY = ev.clientY - rect.top;
     var pulse = document.createElement('div');
     pulse.className = 'pulse';
-    pulse.style.left = px + 'px';
-    pulse.style.top = py + 'px';
+    pulse.style.left = (clickX - 30) + 'px';
+    pulse.style.top = (clickY - 30) + 'px';
     petri.appendChild(pulse);
     setTimeout(function () { if (pulse.parentNode) pulse.parentNode.removeChild(pulse); }, 600);
 
@@ -217,7 +242,7 @@
     setLocal(localCount + delta);
     queueClick(delta);
 
-    // spawn 1-3 new visual viruses anywhere across the hero
+    // spawn 1-3 new visual viruses anywhere across the hero, connected by glowing links
     var spawnN = randInt(1, 3);
     var marginX = 60;
     var marginY = 90;
@@ -225,44 +250,57 @@
       var nx = rand(marginX, Math.max(marginX + 1, rect.width - marginX));
       var ny = rand(marginY, Math.max(marginY + 1, rect.height - marginY));
       var newSize = randInt(40, 120);
+      drawLink(clickX, clickY, nx, ny);
       makeVirus(nx, ny, newSize);
     }
   }
 
-  // ---------------- mouse repel ----------------
-  function onMouseMove(ev) {
+  // ---------------- mouse repel (rAF-throttled) ----------------
+  var rafPending = false;
+  var lastMouse = null;
+
+  function processRepel() {
+    rafPending = false;
+    if (!lastMouse) return;
     var rect = petri.getBoundingClientRect();
-    var mx = ev.clientX - rect.left;
-    var my = ev.clientY - rect.top;
+    var mx = lastMouse.x - rect.left;
+    var my = lastMouse.y - rect.top;
     for (var i = 0; i < viruses.length; i++) {
       var v = viruses[i];
-      var dx = (v.baseX) - mx;
-      var dy = (v.baseY) - my;
+      var dx = v.baseX - mx;
+      var dy = v.baseY - my;
       var dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < REPEL_RADIUS && dist > 0.001) {
         var force = (1 - dist / REPEL_RADIUS) * REPEL_FORCE;
-        var ux = dx / dist;
-        var uy = dy / dist;
-        v.repelX = ux * force;
-        v.repelY = uy * force;
-        v.el.style.transition = 'left 0.3s ease-out, top 0.3s ease-out, opacity 0.3s';
+        v.repelX = (dx / dist) * force;
+        v.repelY = (dy / dist) * force;
+        v.el.style.transition = 'left 0.35s cubic-bezier(0.2,0.8,0.3,1), top 0.35s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
         positionVirus(v);
       } else if (v.repelX !== 0 || v.repelY !== 0) {
         v.repelX = 0;
         v.repelY = 0;
-        v.el.style.transition = 'left 1.5s ease-out, top 1.5s ease-out, opacity 0.3s';
+        v.el.style.transition = 'left 1.6s cubic-bezier(0.2,0.8,0.3,1), top 1.6s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
         positionVirus(v);
       }
     }
   }
 
+  function onMouseMove(ev) {
+    lastMouse = { x: ev.clientX, y: ev.clientY };
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(processRepel);
+    }
+  }
+
   function onMouseLeave() {
+    lastMouse = null;
     for (var i = 0; i < viruses.length; i++) {
       var v = viruses[i];
       if (v.repelX !== 0 || v.repelY !== 0) {
         v.repelX = 0;
         v.repelY = 0;
-        v.el.style.transition = 'left 1.5s ease-out, top 1.5s ease-out, opacity 0.3s';
+        v.el.style.transition = 'left 1.6s cubic-bezier(0.2,0.8,0.3,1), top 1.6s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
         positionVirus(v);
       }
     }
@@ -331,6 +369,7 @@
     hint = $('heroHint');
     toast = $('toast');
     tpl = $('virus-template');
+    linksSvg = $('links');
 
     if (hudLocal) hudLocal.textContent = fmtNum(localCount);
     if (hasClicked && hint) hint.classList.add('hidden');
