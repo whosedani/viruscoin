@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>viruscoin — admin</title>
+  <link rel="icon" type="image/svg+xml" href="./static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Karla:wght@400;500;600&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bio-dark: #0D1A0D;
+      --culture: #132613;
+      --virus-green: #4A8C3F;
+      --toxic-lime: #8BDB4A;
+      --cell-white: #F0F5EC;
+      --spore: #4D6B4D;
+      --border: rgba(74, 140, 63, 0.16);
+      --border-soft: rgba(74, 140, 63, 0.10);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(74, 140, 63, 0.05) 0%, transparent 60%),
+        var(--bio-dark);
+      color: var(--cell-white);
+      font-family: 'Karla', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .admin {
+      max-width: 520px;
+      width: 100%;
+      background: var(--culture);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 60px rgba(74, 140, 63, 0.08);
+    }
+    .admin-title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--toxic-lime);
+      letter-spacing: 3px;
+      text-align: center;
+      margin-bottom: 0.4rem;
+      text-transform: lowercase;
+      text-shadow: 0 0 14px rgba(139, 219, 74, 0.30);
+    }
+    .admin-sub {
+      text-align: center;
+      font-family: 'Ubuntu Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--spore);
+      letter-spacing: 2px;
+      margin-bottom: 1.6rem;
+      text-transform: uppercase;
+    }
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-family: 'Ubuntu Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--spore);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .field input, .field textarea {
+      width: 100%;
+      background: var(--bio-dark);
+      border: 1px solid var(--border-soft);
+      border-radius: 4px;
+      padding: 0.7rem 0.9rem;
+      color: var(--cell-white);
+      font-family: 'Ubuntu Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.25s;
+      resize: vertical;
+    }
+    .field textarea {
+      min-height: 88px;
+      font-family: 'Karla', sans-serif;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--toxic-lime); }
+    .field input::placeholder, .field textarea::placeholder { color: var(--spore); }
+    .btn-save {
+      width: 100%;
+      margin-top: 1rem;
+      background: var(--toxic-lime);
+      color: var(--bio-dark);
+      font-family: 'Rubik', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px;
+      border-radius: 0;
+      border: none;
+      cursor: pointer;
+      transition: filter 0.25s, box-shadow 0.25s;
+    }
+    .btn-save:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 0 28px rgba(139, 219, 74, 0.40);
+    }
+    .status {
+      text-align: center;
+      margin-top: 1rem;
+      font-family: 'Ubuntu Mono', monospace;
+      font-size: 0.75rem;
+      min-height: 1rem;
+      letter-spacing: 1px;
+    }
+    .status.success { color: var(--toxic-lime); }
+    .status.error { color: #FF5E5E; }
+  </style>
+</head>
+<body>
+  <div class="admin">
+    <div class="admin-title">viruscoin</div>
+    <div class="admin-sub">lab access</div>
+
+    <div class="field">
+      <label>Contract Address</label>
+      <input type="text" id="ca" placeholder="Paste CA...">
+    </div>
+
+    <div class="field">
+      <label>Twitter / X URL</label>
+      <input type="text" id="twitterUrl" placeholder="https://x.com/...">
+    </div>
+
+    <div class="field">
+      <label>Community URL</label>
+      <input type="text" id="communityUrl" placeholder="https://x.com/i/communities/...">
+    </div>
+
+    <div class="field">
+      <label>Buy URL</label>
+      <input type="text" id="buyUrl" placeholder="https://pump.fun/...">
+    </div>
+
+    <div class="field">
+      <label>Tweet Text</label>
+      <textarea id="tweetText" placeholder="$viruscoin just infected my wallet. this coin will spread..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Admin password">
+    </div>
+
+    <button class="btn-save" onclick="saveConfig()">Save Config</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    function showStatus(msg, type) {
+      var el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+      setTimeout(function () { el.textContent = ''; el.className = 'status'; }, 3000);
+    }
+
+    async function saveConfig() {
+      var password = document.getElementById('password').value;
+      if (!password) { showStatus('enter password', 'error'); return; }
+
+      var encoder = new TextEncoder();
+      var hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(password));
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      var passwordHash = hashArray.map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+
+      var configData = {
+        passwordHash: passwordHash,
+        ca: document.getElementById('ca').value,
+        twitterUrl: document.getElementById('twitterUrl').value,
+        communityUrl: document.getElementById('communityUrl').value,
+        buyUrl: document.getElementById('buyUrl').value,
+        tweet_text: document.getElementById('tweetText').value
+      };
+
+      try {
+        var res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(configData)
+        });
+        if (res.ok) showStatus('saved. infection live.', 'success');
+        else if (res.status === 401) showStatus('wrong password', 'error');
+        else showStatus('failed to save', 'error');
+      } catch (e) {
+        showStatus('connection error', 'error');
+      }
+    }
+
+    async function loadConfig() {
+      try {
+        var res = await fetch('/api/config');
+        if (res.ok) {
+          var data = await res.json();
+          if (data.ca) document.getElementById('ca').value = data.ca;
+          if (data.twitterUrl) document.getElementById('twitterUrl').value = data.twitterUrl;
+          if (data.communityUrl) document.getElementById('communityUrl').value = data.communityUrl;
+          if (data.buyUrl) document.getElementById('buyUrl').value = data.buyUrl;
+          if (data.tweet_text) document.getElementById('tweetText').value = data.tweet_text;
+        }
+      } catch (e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', loadConfig);
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "viruscoin",
+  "version": "1.0.0",
+  "description": "viruscoin — this coin will spread.",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@upstash/redis": "^1.34.0"
+  }
+}

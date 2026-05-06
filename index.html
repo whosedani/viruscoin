@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>viruscoin — this coin will spread</title>
+  <meta name="description" content="$viruscoin — you don't market a virus. you release it.">
+  <meta property="og:title" content="viruscoin — this coin will spread">
+  <meta property="og:description" content="you don't market a virus. you release it.">
+  <link rel="icon" type="image/svg+xml" href="./static/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Karla:wght@400;500;600&family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- background micro-organisms -->
+  <div class="organisms" aria-hidden="true">
+    <span class="micro" style="--x:8%;--y:14%;--d:28s;--s:6px;"></span>
+    <span class="micro" style="--x:82%;--y:22%;--d:34s;--s:4px;"></span>
+    <span class="micro" style="--x:18%;--y:62%;--d:40s;--s:8px;"></span>
+    <span class="micro" style="--x:71%;--y:73%;--d:25s;--s:5px;"></span>
+    <span class="micro" style="--x:48%;--y:86%;--d:32s;--s:7px;"></span>
+    <span class="micro" style="--x:36%;--y:34%;--d:38s;--s:4px;"></span>
+    <span class="micro" style="--x:90%;--y:55%;--d:30s;--s:6px;"></span>
+    <span class="micro" style="--x:5%;--y:42%;--d:36s;--s:5px;"></span>
+  </div>
+
+  <!-- hidden virus template (used by JS to clone) -->
+  <template id="virus-template">
+    <div class="virus">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g class="spikes">
+          <line x1="50" y1="6" x2="50" y2="20" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="6" r="3.5" fill="#8BDB4A"/>
+          <line x1="50" y1="80" x2="50" y2="94" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="94" r="3.5" fill="#8BDB4A"/>
+          <line x1="6" y1="50" x2="20" y2="50" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="6" cy="50" r="3.5" fill="#8BDB4A"/>
+          <line x1="80" y1="50" x2="94" y2="50" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="94" cy="50" r="3.5" fill="#8BDB4A"/>
+          <line x1="19" y1="19" x2="29" y2="29" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="19" r="3.2" fill="#8BDB4A"/>
+          <line x1="81" y1="19" x2="71" y2="29" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="81" cy="19" r="3.2" fill="#8BDB4A"/>
+          <line x1="19" y1="81" x2="29" y2="71" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="19" cy="81" r="3.2" fill="#8BDB4A"/>
+          <line x1="81" y1="81" x2="71" y2="71" stroke="#4A8C3F" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="81" cy="81" r="3.2" fill="#8BDB4A"/>
+        </g>
+        <circle cx="50" cy="50" r="28" fill="#4A8C3F" stroke="#2E5A28" stroke-width="2"/>
+        <circle cx="42" cy="44" r="4" fill="#2E5A28"/>
+        <circle cx="58" cy="46" r="3" fill="#2E5A28"/>
+        <circle cx="48" cy="58" r="3.5" fill="#2E5A28"/>
+        <circle cx="60" cy="58" r="2.5" fill="#2E5A28"/>
+        <circle cx="40" cy="55" r="2" fill="#2E5A28"/>
+      </svg>
+    </div>
+  </template>
+
+  <!-- toast -->
+  <div class="toast" id="toast">infected.</div>
+
+  <!-- nav -->
+  <nav class="nav">
+    <div class="nav-left">viruscoin</div>
+    <div class="nav-ca" id="navCa" title="click to copy">CA: not deployed yet</div>
+    <div class="nav-right">
+      <a class="icon-btn" id="twitterLink" href="#" target="_blank" rel="noopener" aria-label="twitter">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2H21l-6.5 7.43L22 22h-6.766l-5.27-6.85L3.8 22H1l7-8.013L1 2h6.86l4.77 6.27L18.244 2zm-1.18 18h1.74L7.06 4H5.21l11.853 16z"/></svg>
+      </a>
+      <a class="icon-btn" id="communityLink" href="#" target="_blank" rel="noopener" aria-label="community">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><circle cx="17" cy="9" r="2.6"/><path d="M3 19c0-3 2.7-5 6-5s6 2 6 5"/><path d="M14 19c0-2.3 1.7-4 3.5-4s3.5 1.5 3.5 3.6"/></svg>
+      </a>
+      <a class="btn-buy-nav" id="buyNav" href="#" target="_blank" rel="noopener">buy</a>
+    </div>
+  </nav>
+
+  <!-- I — HERO / VIRUS CLICKER -->
+  <section class="hero" id="hero">
+    <div class="hud">
+      <div class="hud-block">
+        <div class="hud-label">YOUR VIRUSES</div>
+        <div class="hud-value lime" id="localCount">0</div>
+      </div>
+      <div class="hud-block right">
+        <div class="hud-label">GLOBAL INFECTION</div>
+        <div class="hud-value white" id="globalCount">—</div>
+      </div>
+    </div>
+
+    <div class="petri" id="petri"></div>
+
+    <div class="hero-hint" id="heroHint">click the virus. spread the infection.</div>
+
+    <a class="btn-buy" id="buyHero" href="#" target="_blank" rel="noopener">buy $viruscoin</a>
+  </section>
+
+  <!-- II — THE SPREAD -->
+  <section class="section spread">
+    <div class="container narrow">
+      <div class="kicker lime">THE SPREAD</div>
+      <h2 class="h2">This Coin Will Spread Like a Virus.</h2>
+      <p class="lore">It starts with one. One person, one wallet, one click. Then two. Then four. Then it's in every group chat, every timeline, every discord. You can't contain it. You can't stop it. By the time you notice — it's already everywhere.</p>
+      <p class="lore">That's not a marketing strategy. That's biology. $viruscoin doesn't need influencers. It doesn't need paid shills. It spreads the same way every virus spreads: person to person, screen to screen, wallet to wallet.</p>
+      <div class="pull-quote">"You don't market a virus. You release it."</div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num">∞</div>
+          <div class="stat-label">transmission rate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">0</div>
+          <div class="stat-label">ways to stop it</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">1</div>
+          <div class="stat-label">patient zero. you.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- III — SPREAD THE WORD -->
+  <section class="section word">
+    <div class="container narrow center">
+      <div class="kicker lime">SPREAD THE WORD</div>
+      <h2 class="h2">Infect Your Timeline.</h2>
+
+      <div class="tweet-card">
+        <div class="tweet-head">
+          <div class="tweet-avatar">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="50" cy="50" r="34" fill="#4A8C3F"/>
+              <line x1="50" y1="8" x2="50" y2="18" stroke="#4A8C3F" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="50" cy="8" r="4" fill="#8BDB4A"/>
+              <line x1="50" y1="82" x2="50" y2="92" stroke="#4A8C3F" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="50" cy="92" r="4" fill="#8BDB4A"/>
+              <line x1="8" y1="50" x2="18" y2="50" stroke="#4A8C3F" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="8" cy="50" r="4" fill="#8BDB4A"/>
+              <line x1="82" y1="50" x2="92" y2="50" stroke="#4A8C3F" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="92" cy="50" r="4" fill="#8BDB4A"/>
+            </svg>
+          </div>
+          <div class="tweet-meta">
+            <div class="tweet-name">patient zero</div>
+            <div class="tweet-handle">@viruscoin</div>
+          </div>
+        </div>
+        <div class="tweet-body" id="tweetText">$viruscoin just infected my wallet. this coin will spread. you can't stop it. 🦠</div>
+      </div>
+
+      <button class="btn-spread" id="spreadBtn">🦠 spread on X</button>
+    </div>
+  </section>
+
+  <!-- IV — HOW TO BUY -->
+  <section class="section buy">
+    <div class="container narrow">
+      <div class="kicker green">INFECT YOURSELF</div>
+      <h2 class="h2 small">How to catch it.</h2>
+
+      <div class="steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <span class="step-text">Download Phantom. Patient zero needs a host.</span>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <span class="step-text">Buy SOL. Fuel the outbreak.</span>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <span class="step-text">Swap for $viruscoin on pump.fun.</span>
+        </div>
+        <div class="step">
+          <span class="step-num">4</span>
+          <span class="step-text">Spread. Click. Infect. Repeat.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container narrow footer-row">
+      <div class="footer-left">
+        <svg class="footer-virus" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <line x1="12" y1="1" x2="12" y2="5" stroke="#4A8C3F" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="12" y1="19" x2="12" y2="23" stroke="#4A8C3F" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="1" y1="12" x2="5" y2="12" stroke="#4A8C3F" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="19" y1="12" x2="23" y2="12" stroke="#4A8C3F" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="6" fill="#4A8C3F"/>
+        </svg>
+        <span class="footer-title">this coin will spread. on-chain.</span>
+      </div>
+      <div class="footer-ca" id="footerCa">CA: not deployed yet</div>
+    </div>
+  </footer>
+
+  <script src="./script.js"></script>
+</body>
+</html>
