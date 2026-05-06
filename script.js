@@ -2,9 +2,10 @@
   'use strict';
 
   // ---------------- state ----------------
-  var MAX_VIRUSES = 200;
-  var REPEL_RADIUS = 130;
-  var REPEL_FORCE = 70;
+  var MAX_VIRUSES = 300;
+  var ATTRACT_K = 5;
+  var ATTRACT_RANGE = 340;
+  var ATTRACT_FORCE = 120;
   var GLOBAL_POLL_MS = 5000;
   var SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -14,7 +15,7 @@
   var hasClicked = localCount > 0;
 
   var petri, hudLocal, hudGlobal, hint, toast, tpl, linksSvg;
-  var viruses = []; // { el, baseX, baseY, size, repelX, repelY, swapTransition }
+  var viruses = []; // { el, baseX, baseY, size, attractX, attractY, swapTransition }
   var pendingClicks = 0;
   var flushTimer = null;
 
@@ -144,8 +145,8 @@
       baseX: x,
       baseY: y,
       size: size,
-      repelX: 0,
-      repelY: 0
+      attractX: 0,
+      attractY: 0
     };
     positionVirus(entry);
 
@@ -164,10 +165,18 @@
   }
 
   function positionVirus(entry) {
-    var x = entry.baseX + entry.repelX - entry.size / 2;
-    var y = entry.baseY + entry.repelY - entry.size / 2;
+    var x = entry.baseX + (entry.attractX || 0) - entry.size / 2;
+    var y = entry.baseY + (entry.attractY || 0) - entry.size / 2;
     entry.el.style.left = x + 'px';
     entry.el.style.top = y + 'px';
+  }
+
+  function releaseVirus(v) {
+    if (v.attractX === 0 && v.attractY === 0) return;
+    v.attractX = 0;
+    v.attractY = 0;
+    v.el.style.transition = 'left 1.6s cubic-bezier(0.2,0.8,0.3,1), top 1.6s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
+    positionVirus(v);
   }
 
   function enforceCap() {
@@ -255,32 +264,46 @@
     }
   }
 
-  // ---------------- mouse repel (rAF-throttled) ----------------
+  // ---------------- magnetic attraction (K nearest within range) ----------------
   var rafPending = false;
   var lastMouse = null;
 
-  function processRepel() {
+  function processAttract() {
     rafPending = false;
-    if (!lastMouse) return;
+    if (!lastMouse) {
+      for (var i = 0; i < viruses.length; i++) releaseVirus(viruses[i]);
+      return;
+    }
     var rect = petri.getBoundingClientRect();
     var mx = lastMouse.x - rect.left;
     var my = lastMouse.y - rect.top;
-    for (var i = 0; i < viruses.length; i++) {
-      var v = viruses[i];
-      var dx = v.baseX - mx;
-      var dy = v.baseY - my;
+
+    var inRange = [];
+    for (var j = 0; j < viruses.length; j++) {
+      var v = viruses[j];
+      var dx = mx - v.baseX;
+      var dy = my - v.baseY;
       var dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < REPEL_RADIUS && dist > 0.001) {
-        var force = (1 - dist / REPEL_RADIUS) * REPEL_FORCE;
-        v.repelX = (dx / dist) * force;
-        v.repelY = (dy / dist) * force;
-        v.el.style.transition = 'left 0.35s cubic-bezier(0.2,0.8,0.3,1), top 0.35s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
-        positionVirus(v);
-      } else if (v.repelX !== 0 || v.repelY !== 0) {
-        v.repelX = 0;
-        v.repelY = 0;
-        v.el.style.transition = 'left 1.6s cubic-bezier(0.2,0.8,0.3,1), top 1.6s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
-        positionVirus(v);
+      if (dist < ATTRACT_RANGE) {
+        inRange.push({ v: v, dist: dist, dx: dx, dy: dy });
+      } else {
+        releaseVirus(v);
+      }
+    }
+
+    inRange.sort(function (a, b) { return a.dist - b.dist; });
+
+    for (var k = 0; k < inRange.length; k++) {
+      var c = inRange[k];
+      if (k < ATTRACT_K && c.dist > 0.001) {
+        var t = 1 - c.dist / ATTRACT_RANGE;
+        var force = ATTRACT_FORCE * t * t;
+        c.v.attractX = (c.dx / c.dist) * force;
+        c.v.attractY = (c.dy / c.dist) * force;
+        c.v.el.style.transition = 'left 0.4s cubic-bezier(0.2,0.8,0.3,1), top 0.4s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
+        positionVirus(c.v);
+      } else {
+        releaseVirus(c.v);
       }
     }
   }
@@ -289,21 +312,13 @@
     lastMouse = { x: ev.clientX, y: ev.clientY };
     if (!rafPending) {
       rafPending = true;
-      requestAnimationFrame(processRepel);
+      requestAnimationFrame(processAttract);
     }
   }
 
   function onMouseLeave() {
     lastMouse = null;
-    for (var i = 0; i < viruses.length; i++) {
-      var v = viruses[i];
-      if (v.repelX !== 0 || v.repelY !== 0) {
-        v.repelX = 0;
-        v.repelY = 0;
-        v.el.style.transition = 'left 1.6s cubic-bezier(0.2,0.8,0.3,1), top 1.6s cubic-bezier(0.2,0.8,0.3,1), opacity 0.3s';
-        positionVirus(v);
-      }
-    }
+    for (var i = 0; i < viruses.length; i++) releaseVirus(viruses[i]);
   }
 
   // ---------------- resize ----------------
